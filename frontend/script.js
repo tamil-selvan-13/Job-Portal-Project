@@ -50,7 +50,7 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   const data = await res.json();
 
   if (res.ok) {
-    const role = email.value === "admin@gmail.com" ? "admin" : "user";
+    const role = document.getElementById("email").value === "admin@gmail.com" ? "admin" : "user";
 
     localStorage.setItem("user", JSON.stringify({
       ...data.user,
