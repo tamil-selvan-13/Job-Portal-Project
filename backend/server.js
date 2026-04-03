@@ -14,9 +14,10 @@ app.use(express.json());
 /* =========================
    MONGODB CONNECTION
 ========================= */
-mongoose.connect("mongodb://127.0.0.1:27017/jobportal")
+const DB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/jobportal";
+mongoose.connect(DB_URI)
 .then(() => console.log("MongoDB Connected"))
-.catch(err => console.log(err));
+.catch(err => console.log("MongoDB connection error:", err));
 
 
 /* =========================
@@ -75,7 +76,7 @@ seedJobs();
 /* =========================
    REGISTER
 ========================= */
-app.post("/register", async (req, res) => {
+app.post("/api/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
@@ -99,7 +100,7 @@ app.post("/register", async (req, res) => {
 /* =========================
    LOGIN
 ========================= */
-app.post("/login", async (req, res) => {
+app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -131,7 +132,7 @@ app.post("/login", async (req, res) => {
 /* =========================
    ADD JOB (ADMIN)
 ========================= */
-app.post("/jobs", async (req, res) => {
+app.post("/api/jobs", async (req, res) => {
   try {
     const job = new Job(req.body);
     await job.save();
@@ -148,7 +149,7 @@ app.post("/jobs", async (req, res) => {
 /* =========================
    GET ALL JOBS (USERS)
 ========================= */
-app.get("/jobs", async (req, res) => {
+app.get("/api/jobs", async (req, res) => {
   try {
     const jobs = await Job.find();
     res.json(jobs);
@@ -163,7 +164,7 @@ app.get("/jobs", async (req, res) => {
 /* =========================
    APPLY JOB
 ========================= */
-app.post("/apply", async (req, res) => {
+app.post("/api/apply", async (req, res) => {
   try {
     console.log("Apply:", req.body);
 
@@ -182,7 +183,7 @@ app.post("/apply", async (req, res) => {
 /* =========================
    GET APPLICATIONS
 ========================= */
-app.get("/applications", async (req, res) => {
+app.get("/api/applications", async (req, res) => {
   try {
     const { email } = req.query;
     const query = email ? { userEmail: email } : {};
@@ -198,7 +199,7 @@ app.get("/applications", async (req, res) => {
 /* =========================
    UPDATE APPLICATION
 ========================= */
-app.put("/applications/:id", async (req, res) => {
+app.put("/api/applications/:id", async (req, res) => {
   try {
     const { applicantMessage } = req.body;
     await Application.findByIdAndUpdate(req.params.id, { applicantMessage });
@@ -212,7 +213,7 @@ app.put("/applications/:id", async (req, res) => {
 /* =========================
    DELETE APPLICATION
 ========================= */
-app.delete("/applications/:id", async (req, res) => {
+app.delete("/api/applications/:id", async (req, res) => {
   try {
     await Application.findByIdAndDelete(req.params.id);
     res.json({ message: "Application withdrawn successfully" });
@@ -224,8 +225,12 @@ app.delete("/applications/:id", async (req, res) => {
 
 
 /* =========================
-   SERVER START
+   SERVER START (Vercel Export)
 ========================= */
-app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
-});
+if (process.env.NODE_ENV !== "production") {
+  app.listen(3000, () => {
+    console.log("Server running on http://localhost:3000");
+  });
+}
+
+module.exports = app;
