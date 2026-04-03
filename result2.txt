@@ -1,0 +1,6 @@
+Server:  dns.google
+Address:  8.8.8.8
+
+job.pwlbg8c.mongodb.net	text =
+
+	"authSource=admin&replicaSet=atlas-7f3wkm-shard-0"
