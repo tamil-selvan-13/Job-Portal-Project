@@ -1,119 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Applications</title>
-    <style>
-        body {
-            font-family: Arial;
-            background: #f5f5f5;
-        }
-
-        .container {
-            width: 400px;
-            margin: 50px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px #ccc;
-        }
-
-        h2 {
-            text-align: center;
-        }
-
-        li {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            padding: 8px;
-            background: #eee;
-            border-radius: 5px;
-        }
-
-        button {
-            background: red;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        button:hover {
-            background: darkred;
-        }
-    </style>
+  <title>Applications</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-    <h2>My Applications</h2>
-    <ul id="appList"></ul>
+<div class="navbar">
+  <h2>Applications</h2>
+  <button onclick="logout()">Logout</button>
 </div>
 
-<script>
-let user = JSON.parse(localStorage.getItem("loggedInUser"));
+<div class="container">
 
-// 🔒 Protect page
-if (!user) {
-    alert("Please login first!");
-    window.location.href = "login.html";
-}
+  <div class="card">
+    <h3>Applied Jobs</h3>
+    <div id="applicationList"></div>
+  </div>
 
-// 🔹 LOAD APPLICATIONS
-function loadApps() {
-    fetch(`http://localhost:3000/applications/${user.email}`)
-    .then(res => res.json())
-    .then(data => {
+</div>
 
-        let list = document.getElementById("appList");
-        list.innerHTML = "";
-
-        if (data.length === 0) {
-            list.innerHTML = "<p>No applications found</p>";
-            return;
-        }
-
-        data.forEach(app => {
-            let li = document.createElement("li");
-
-            li.innerHTML = `
-                <span>${app.job}</span>
-                <button onclick="deleteJob('${app.job}')">Delete</button>
-            `;
-
-            list.appendChild(li);
-        });
-    })
-    .catch(err => console.log(err));
-}
-
-// 🔹 DELETE FUNCTION
-function deleteJob(job) {
-
-    console.log("Deleting:", user.email, job);
-
-    fetch("http://localhost:3000/delete", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            email: user.email,
-            job: job
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert(data.message);
-        loadApps(); // 🔥 refresh list
-    })
-    .catch(err => console.log(err));
-}
-
-// 🔹 LOAD DATA ON PAGE LOAD
-loadApps();
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>

@@ -2,29 +2,42 @@
 <html>
 <head>
   <title>Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
+<div class="navbar">
   <h2>Dashboard</h2>
-
-  <div id="userInfo"></div>
-
-  <form id="jobForm">
-    <input type="text" id="title" placeholder="Job Title" required />
-    <input type="text" id="company" placeholder="Company" required />
-    <button type="submit">Add Job</button>
-  </form>
-
-  <h3>Jobs</h3>
-  <div id="jobList"></div>
-
-  <button id="logout">Logout</button>
+  <button onclick="logout()">Logout</button>
 </div>
 
-<!-- IMPORTANT: script must be at bottom -->
-<script src="script.js"></script>
+<div class="container">
 
+  <!-- 👨‍💼 ADMIN PANEL -->
+  <div id="adminSection" class="card" style="display:none;">
+    <h3>Add Job (Admin Only)</h3>
+
+    <form id="jobForm">
+      <input id="title" placeholder="Job Title" required>
+      <input id="company" placeholder="Company" required>
+      <button type="submit">Add Job</button>
+    </form>
+  </div>
+
+  <!-- 👥 JOB LIST -->
+  <div class="card">
+    <h3>Jobs</h3>
+    <div id="jobList"></div>
+  </div>
+
+  <!-- 💼 MY APPLIED JOBS -->
+  <div class="card" id="myApplicationsCard" style="display:none;">
+    <h3>My Applied Jobs</h3>
+    <div id="myApplicationList"></div>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
