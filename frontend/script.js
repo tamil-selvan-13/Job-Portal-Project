@@ -19,9 +19,9 @@ document.getElementById("registerForm")?.addEventListener("submit", async (e) =>
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      name: name.value,
-      email: email.value,
-      password: password.value
+      name: document.getElementById("name").value,
+      email: document.getElementById("email").value,
+      password: document.getElementById("password").value
     })
   });
 
@@ -42,8 +42,8 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      email: email.value,
-      password: password.value
+      email: document.getElementById("email").value,
+      password: document.getElementById("password").value
     })
   });
 
