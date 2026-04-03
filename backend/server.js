@@ -20,9 +20,18 @@ app.use(express.static(path.join(__dirname, "../frontend")));
    MONGODB CONNECTION
 ========================= */
 const DB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/jobportal";
-mongoose.connect(DB_URI)
-.then(() => console.log("MongoDB Connected"))
-.catch(err => console.log("MongoDB connection error:", err));
+
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await mongoose.connect(DB_URI);
+      console.log("MongoDB Connected in Serverless!");
+    } catch (err) {
+      console.error("MongoDB connection error:", err);
+    }
+  }
+  next();
+});
 
 
 /* =========================
