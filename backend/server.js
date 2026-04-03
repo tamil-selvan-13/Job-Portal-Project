@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 
@@ -9,6 +10,9 @@ const app = express();
 ========================= */
 app.use(cors());
 app.use(express.json());
+
+// Serve static frontend files
+app.use(express.static(path.join(__dirname, "../frontend")));
 
 
 /* =========================
@@ -225,12 +229,9 @@ app.delete("/api/applications/:id", async (req, res) => {
 
 
 /* =========================
-   SERVER START (Vercel Export)
+   SERVER START (Render Configure)
 ========================= */
-if (process.env.NODE_ENV !== "production") {
-  app.listen(3000, () => {
-    console.log("Server running on http://localhost:3000");
-  });
-}
-
-module.exports = app;
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
