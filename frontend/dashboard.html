@@ -1,38 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - JobPortal</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
+<div id="toast-container"></div>
+
 <div class="navbar">
-  <h2>Dashboard</h2>
-  <button onclick="logout()">Logout</button>
+  <h2><i class="fa-solid fa-chart-line" style="color:#38bdf8;"></i> Dashboard</h2>
+  <div>
+    <a href="applications.html"><i class="fa-solid fa-folder-open"></i> My Applications</a>
+    <button onclick="logout()" class="btn-danger"><i class="fa-solid fa-power-off"></i> Logout</button>
+  </div>
 </div>
 
-<div class="container">
+<div class="container fade-in">
 
   <!-- 👨‍💼 ADMIN PANEL -->
-  <div id="adminSection" class="card" style="display:none;">
-    <h3>Add Job (Admin Only)</h3>
-
-    <form id="jobForm">
-      <input id="title" placeholder="Job Title" required>
-      <input id="company" placeholder="Company" required>
-      <button type="submit">Add Job</button>
+  <div id="adminSection" class="card" style="display:none; border-color: var(--primary);">
+    <h3><i class="fa-solid fa-user-tie" style="color:var(--primary);"></i> Add New Job (Admin Only)</h3>
+    <form id="jobForm" style="flex-direction: row; align-items: flex-start; gap: 10px;">
+      <div style="position: relative; flex: 1;">
+        <i class="fa-solid fa-briefcase" style="position: absolute; left: 15px; top: 17px; color: #94a3b8;"></i>
+        <input id="title" placeholder="Job Title" required style="padding-left: 45px; margin-bottom: 0;">
+      </div>
+      <div style="position: relative; flex: 1;">
+        <i class="fa-solid fa-building" style="position: absolute; left: 15px; top: 17px; color: #94a3b8;"></i>
+        <input id="company" placeholder="Company Name" required style="padding-left: 45px; margin-bottom: 0;">
+      </div>
+      <button type="submit" class="btn-success" style="padding: 14px 24px; margin-bottom: 0;"><i class="fa-solid fa-plus"></i> Post Job</button>
     </form>
   </div>
 
   <!-- 👥 JOB LIST -->
   <div class="card">
-    <h3>Jobs</h3>
+    <h3 style="display: flex; justify-content: space-between; align-items: center;">
+      <span><i class="fa-solid fa-list" style="color:var(--primary);"></i> Available Jobs</span>
+      <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-muted);"><i class="fa-solid fa-circle-info"></i> Browse and apply below</span>
+    </h3>
     <div id="jobList"></div>
   </div>
 
-  <!-- 💼 MY APPLIED JOBS -->
+  <!-- 💼 MY APPLIED JOBS (Legacy section, kept so script runs without errors, though we have applications.html) -->
   <div class="card" id="myApplicationsCard" style="display:none;">
-    <h3>My Applied Jobs</h3>
+    <h3><i class="fa-solid fa-folder-open" style="color:var(--primary);"></i> My Applied Jobs</h3>
     <div id="myApplicationList"></div>
   </div>
 

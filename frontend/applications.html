@@ -1,20 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Applications</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Applications - JobPortal</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
+<div id="toast-container"></div>
+
 <div class="navbar">
-  <h2>Applications</h2>
-  <button onclick="logout()">Logout</button>
+  <h2><i class="fa-solid fa-folder-open" style="color:#38bdf8;"></i> Applications</h2>
+  <div>
+    <a href="dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <button onclick="logout()" class="btn-danger"><i class="fa-solid fa-power-off"></i> Logout</button>
+  </div>
 </div>
 
-<div class="container">
+<div class="container fade-in">
 
   <div class="card">
-    <h3>Applied Jobs</h3>
+    <h3><i class="fa-solid fa-briefcase" style="color:var(--primary);"></i> Jobs You've Applied For</h3>
+    <p style="margin-bottom: 20px;">Review, update, or withdraw your current applications.</p>
     <div id="applicationList"></div>
   </div>
 

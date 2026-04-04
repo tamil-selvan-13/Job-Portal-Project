@@ -3,6 +3,32 @@ const API = window.location.hostname === "127.0.0.1" || window.location.hostname
   : "/api";
 
 /* =========================
+   CUSTOM TOAST ALERTS
+========================= */
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  let icon = '<i class="fa-solid fa-circle-info"></i>';
+  if (type === 'success') icon = '<i class="fa-solid fa-circle-check"></i>';
+  if (type === 'error') icon = '<i class="fa-solid fa-circle-exclamation"></i>';
+
+  toast.innerHTML = `${icon} <span>${message}</span>`;
+  container.appendChild(toast);
+
+  // Auto remove after 3 seconds
+  setTimeout(() => {
+    toast.classList.add('fade-out');
+    toast.addEventListener('animationend', () => {
+      toast.remove();
+    });
+  }, 3000);
+}
+
+/* =========================
    GET USER
 ========================= */
 function getUser() {
@@ -15,20 +41,28 @@ function getUser() {
 document.getElementById("registerForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const res = await fetch(`${API}/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: document.getElementById("name").value,
-      email: document.getElementById("email").value,
-      password: document.getElementById("password").value
-    })
-  });
+  try {
+    const res = await fetch(`${API}/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value
+      })
+    });
 
-  const data = await res.json();
-  alert(data.message);
-
-  if (res.ok) window.location.href = "login.html";
+    const data = await res.json();
+    
+    if (res.ok) {
+      showToast(data.message, 'success');
+      setTimeout(() => window.location.href = "login.html", 1500);
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch(err) {
+    showToast("Server error", 'error');
+  }
 });
 
 
@@ -38,28 +72,32 @@ document.getElementById("registerForm")?.addEventListener("submit", async (e) =>
 document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const res = await fetch(`${API}/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email: document.getElementById("email").value,
-      password: document.getElementById("password").value
-    })
-  });
+  try {
+    const res = await fetch(`${API}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value
+      })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if (res.ok) {
-    const role = document.getElementById("email").value === "admin@gmail.com" ? "admin" : "user";
+    if (res.ok) {
+      const role = document.getElementById("email").value === "admin@gmail.com" ? "admin" : "user";
+      localStorage.setItem("user", JSON.stringify({
+        ...data.user,
+        role: role
+      }));
 
-    localStorage.setItem("user", JSON.stringify({
-      ...data.user,
-      role: role
-    }));
-
-    window.location.href = "dashboard.html";
-  } else {
-    alert(data.message);
+      showToast("Login successful!", "success");
+      setTimeout(() => window.location.href = "dashboard.html", 1000);
+    } else {
+      showToast(data.message, "error");
+    }
+  } catch (err) {
+    showToast("Server error", "error");
   }
 });
 
@@ -68,39 +106,49 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
    LOAD JOBS
 ========================= */
 async function loadJobs() {
-  const res = await fetch(`${API}/jobs`);
-  const jobs = await res.json();
+  try {
+    const res = await fetch(`${API}/jobs`);
+    const jobs = await res.json();
 
-  const jobList = document.getElementById("jobList");
-  if (!jobList) return;
+    const jobList = document.getElementById("jobList");
+    if (!jobList) return;
 
-  jobList.innerHTML = "";
+    jobList.innerHTML = "";
 
-  jobs.forEach(job => {
-    const div = document.createElement("div");
-    div.className = "job-card";
+    if (jobs.length === 0) {
+      jobList.innerHTML = "<p style='color: var(--text-muted);'>No jobs available right now.</p>";
+    }
 
-    div.innerHTML = `
-      <div>
-        <h4>${job.title}</h4>
-        <p>${job.company}</p>
-      </div>
-      <button onclick="applyJob('${job.title}', '${job.company}')">
-        Apply
-      </button>
-    `;
+    jobs.forEach(job => {
+      const div = document.createElement("div");
+      div.className = "job-card";
 
-    jobList.appendChild(div);
-  });
+      div.innerHTML = `
+        <div class="job-info">
+          <h4>${job.title}</h4>
+          <p><i class="fa-regular fa-building"></i> ${job.company}</p>
+        </div>
+        <button onclick="applyJob('${job.title}', '${job.company}')">
+          <i class="fa-solid fa-paper-plane"></i> Apply
+        </button>
+      `;
 
-  // 👉 SHOW ADMIN PANEL
-  const user = getUser();
-  if (user && user.role === "admin") {
-    document.getElementById("adminSection").style.display = "block";
+      jobList.appendChild(div);
+    });
+
+    // 👉 SHOW ADMIN PANEL
+    const user = getUser();
+    if (user && user.role === "admin") {
+      const adminSec = document.getElementById("adminSection");
+      if(adminSec) adminSec.style.display = "block";
+    }
+  } catch (err) {
+    console.error("Error loading jobs");
   }
 }
 
-loadJobs();
+// Load jobs automatically on relevant pages
+if (document.getElementById("jobList")) loadJobs();
 
 
 /* =========================
@@ -112,21 +160,30 @@ document.getElementById("jobForm")?.addEventListener("submit", async (e) => {
   const user = getUser();
 
   if (!user || user.role !== "admin") {
-    alert("Only admin can add jobs");
+    showToast("Only admin can add jobs", "error");
     return;
   }
 
-  await fetch(`${API}/jobs`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      title: title.value,
-      company: company.value
-    })
-  });
+  const title = document.getElementById("title");
+  const company = document.getElementById("company");
 
-  alert("Job added");
-  loadJobs();
+  try {
+    await fetch(`${API}/jobs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: title.value,
+        company: company.value
+      })
+    });
+
+    showToast("Job added successfully!", "success");
+    title.value = "";
+    company.value = "";
+    loadJobs();
+  } catch (err) {
+    showToast("Error adding job", "error");
+  }
 });
 
 
@@ -134,10 +191,11 @@ document.getElementById("jobForm")?.addEventListener("submit", async (e) => {
    APPLY JOB
 ========================= */
 async function applyJob(title, company) {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = getUser();
 
   if (!user) {
-    alert("Please login first");
+    showToast("Please login first to apply", "error");
+    setTimeout(() => window.location.href = "login.html", 1500);
     return;
   }
 
@@ -147,9 +205,7 @@ async function applyJob(title, company) {
   try {
     const res = await fetch(`${API}/apply`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userName: user.name,
         userEmail: user.email,
@@ -161,14 +217,17 @@ async function applyJob(title, company) {
 
     const data = await res.json();
 
-    alert(data.message);
-    if (document.getElementById("myApplicationsCard")) {
-      loadMyApplications();
+    if (res.ok) {
+      showToast(data.message, "success");
+      if (document.getElementById("myApplicationsCard")) {
+        loadMyApplications();
+      }
+    } else {
+      showToast(data.message, "error");
     }
-
   } catch (err) {
     console.log(err);
-    alert("Apply failed");
+    showToast("Apply failed", "error");
   }
 }
 
@@ -181,44 +240,60 @@ async function loadMyApplications() {
 
   const card = document.getElementById("myApplicationsCard");
   const list = document.getElementById("myApplicationList");
-  if (!card || !list) return;
+  // Also check if we are on applications.html
+  const appListOnly = document.getElementById("applicationList");
+  
+  const targetList = list || appListOnly;
+  if (!targetList) return;
 
-  card.style.display = "block"; // Show the card
+  if (card) card.style.display = "block";
 
-  const res = await fetch(`${API}/applications?email=${user.email}`);
-  const apps = await res.json();
+  try {
+    const res = await fetch(`${API}/applications?email=${user.email}`);
+    const apps = await res.json();
 
-  list.innerHTML = "";
+    targetList.innerHTML = "";
 
-  if (apps.length === 0) {
-    list.innerHTML = "<p>You haven't applied for any jobs yet.</p>";
-    return;
+    if (apps.length === 0) {
+      targetList.innerHTML = "<p style='color: var(--text-muted);'>You haven't applied for any jobs yet.</p>";
+      return;
+    }
+
+    apps.forEach(app => {
+      const div = document.createElement("div");
+      div.className = "job-card my-app-card";
+
+      let messageText = app.applicantMessage ? app.applicantMessage : "(No message)";
+
+      div.innerHTML = `
+        <div class="job-info" style="width: 100%;">
+          <h4>${app.jobTitle}</h4>
+          <p><i class="fa-regular fa-building"></i> ${app.company}</p>
+          <div style="margin-top:10px; padding:10px; background: rgba(0,0,0,0.2); border-left: 3px solid #cbd5e1; border-radius: 4px;">
+            <p style="font-size: 0.9em; color: #cbd5e1; font-weight: normal; margin: 0;">
+              <i class="fa-regular fa-comment"></i> ${messageText}
+            </p>
+          </div>
+        </div>
+        <div class="my-app-actions">
+          <button style="background: #eab308; color: black; padding: 8px 16px; font-size: 0.9rem;" onclick="editApplication('${app._id}', '${messageText.replace(/'/g, "\\'")}')">
+            <i class="fa-solid fa-pen"></i> Edit
+          </button>
+          <button style="background: #ef4444; color: white; padding: 8px 16px; font-size: 0.9rem;" onclick="withdrawApplication('${app._id}')">
+            <i class="fa-solid fa-trash"></i> Withdraw
+          </button>
+        </div>
+      `;
+
+      targetList.appendChild(div);
+    });
+  } catch (err) {
+    console.error("Error loading applications", err);
   }
-
-  apps.forEach(app => {
-    const div = document.createElement("div");
-    div.className = "job-card";
-
-    let messageText = app.applicantMessage ? app.applicantMessage : "(No message)";
-
-    div.innerHTML = `
-      <div>
-        <h4>${app.jobTitle}</h4>
-        <p>${app.company}</p>
-        <p style="font-size: 0.9em; color: #ccc;">Message: ${messageText}</p>
-      </div>
-      <div>
-        <button style="background: #eab308; color: black;" onclick="editApplication('${app._id}', '${messageText.replace(/'/g, "\\'")}')">Edit</button>
-        <button style="background: #ef4444; color: white; margin-left: 5px;" onclick="withdrawApplication('${app._id}')">Withdraw</button>
-      </div>
-    `;
-
-    list.appendChild(div);
-  });
 }
 
-// Only call this on the dashboard
-if (document.getElementById("myApplicationsCard")) {
+// Load applications automatically 
+if (document.getElementById("myApplicationsCard") || document.getElementById("applicationList")) {
   loadMyApplications();
 }
 
@@ -238,14 +313,14 @@ async function editApplication(id, oldMessage) {
     });
     
     if (res.ok) {
-      alert("Application updated!");
+      showToast("Application updated!", "success");
       loadMyApplications();
     } else {
-      alert("Failed to update application");
+      showToast("Failed to update application", "error");
     }
   } catch (err) {
     console.log(err);
-    alert("Error updating application");
+    showToast("Error updating application", "error");
   }
 }
 
@@ -261,48 +336,24 @@ async function withdrawApplication(id) {
     });
     
     if (res.ok) {
-      alert("Application withdrawn!");
+      showToast("Application withdrawn!", "success");
       loadMyApplications();
     } else {
-      alert("Failed to withdraw application");
+      showToast("Failed to withdraw application", "error");
     }
   } catch (err) {
     console.log(err);
-    alert("Error withdrawing application");
+    showToast("Error withdrawing application", "error");
   }
 }
-/* =========================
-   LOAD APPLICATIONS
-========================= */
-async function loadApplications() {
-  const res = await fetch(`${API}/applications`);
-  const apps = await res.json();
-
-  const list = document.getElementById("applicationList");
-  if (!list) return;
-
-  list.innerHTML = "";
-
-  apps.forEach(app => {
-    const div = document.createElement("div");
-    div.className = "job-card";
-
-    div.innerHTML = `
-      <p><b>${app.userName}</b> applied for</p>
-      <p>${app.jobTitle} - ${app.company}</p>
-    `;
-
-    list.appendChild(div);
-  });
-}
-
-loadApplications();
-
 
 /* =========================
    LOGOUT
 ========================= */
 function logout() {
   localStorage.removeItem("user");
-  window.location.href = "login.html";
-}
+  showToast("Logging out...", "info");
+  setTimeout(() => {
+    window.location.href = "login.html";
+  }, 800);
+}
